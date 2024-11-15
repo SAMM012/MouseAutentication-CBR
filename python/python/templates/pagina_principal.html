@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página Principal</title>
+  </head>
+  <body>
+    <h1>¡Bienvenido a la Página Principal, {{ session.username }}!</h1>
+    <p>Esta es la sección principal de la aplicación.</p>
+
+    <h2>Movimientos del Mouse:</h2>
+    <ul>
+      {% for x, y in movements %}
+      <li>Coordenadas: X={{ x }}, Y={{ y }}</li>
+      {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+  </body>
+</html>

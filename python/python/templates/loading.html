@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cargando...</title>
+    <script>
+      // Redirigir a la página principal después de 3 segundos
+      setTimeout(function () {
+        window.location.href = "{{ url_for('pagina_principal') }}";
+      }, 3000);
+    </script>
+  </head>
+  <body>
+    <h1>Cargando, por favor espera...</h1>
+    <p>Capturando tu movimiento del mouse...</p>
+  </body>
+</html>

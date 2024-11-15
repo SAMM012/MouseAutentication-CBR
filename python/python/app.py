@@ -10,28 +10,38 @@ app.secret_key = os.urandom(24)
 
 user_mouse_movements = {}
 
+#Generar intento id
+def generar_intento_id(username):
+    query = "SELECT COALESCE(MAX(intento_id), 0) + 1 FROM movimientos WHERE username = ?"
+    result = ejecutar_consulta(query, (username,), fetch_one=True)
+    return result[0]
+
 def verificar_credenciales(username, password):
     query = "SELECT * FROM usuarios WHERE username = ? AND password = ?"
     result = ejecutar_consulta(query, (username, password), fetch_one=True)
     return result is not None
  
-def guardar_movimientos(username, movimientos_usuario):
-    query = "INSERT INTO movimientos (username, x, y) VALUES (?, ?, ?)"
-    for x, y in movimientos_usuario:
-        ejecutar_consulta(query, (username, x, y))
-    print(f"Movimientos guardados en la base de datos para el usuario {username}")
+ #Funcion para guardar los movimientos
+def guardar_movimientos(username, movimientos_usuario, intento_id):
+    query = "INSERT INTO movimientos (username, intento_id, x, y, timestamp) VALUES (?, ?, ?, ?, ?)"
+    for x, y, timestamp  in movimientos_usuario:
+        ejecutar_consulta(query, (username, intento_id, x, y, timestamp))
+    print(f"Movimientos guardados en la base de datos para el usuario {username}, intento {intento_id}")
 
-def capture_mouse_movement(username, duration=10):
+def capture_mouse_movement(username, duration=10):  # Cambiamos a 10 segundos para la captura
     movimientos_usuario = []
+    intento_id = generar_intento_id(username)
 
     def on_move(x, y):
-        movimientos_usuario.append((x, y)) 
-    with mouse.Listener(on_move=on_move) as listener:
-        time.sleep(duration)  # Captura por el tiempo especificado
-        listener.stop()  # Detener el listener
+        timestamp = time.time()
+        movimientos_usuario.append((x, y, timestamp))
 
-    # Guardar los movimientos en la base de datos
-    guardar_movimientos(username, movimientos_usuario)
+    with mouse.Listener(on_move=on_move) as listener:
+        time.sleep(duration)
+        listener.stop()
+        #guardar movimientos en la bd
+    guardar_movimientos(username, movimientos_usuario, intento_id)
+    print(f"Movimientos guardados en la base de datos para el usuario {username}")
 
 @app.route("/")
 def home():
@@ -46,7 +56,7 @@ def login():
             session["username"] = username  # Guardar el nombre de usuario en la sesión
             threading.Thread(
                 target=capture_mouse_movement, args=(username, 10)
-            ).start()  # Captura mouse por 3 segundos
+            ).start() 
             return render_template("loading.html")  # Página de carga
         else:
             flash("Credenciales incorrectas. Inténtalo de nuevo.")
@@ -55,8 +65,8 @@ def login():
 
 @app.route("/pagina_principal")
 def pagina_principal():
-    if "username" not in session:  # Verificar si el usuario está autenticado
-        return redirect(url_for("login"))  # Redirigir a la página de inicio de sesión si no está autenticado
+    if "username" not in session:  
+        return redirect(url_for("login")) 
 
     # Mostrar los movimientos del mouse para el usuario actual
     current_user = session["username"]

@@ -1,4 +1,4 @@
-import os
+'''import os
 import threading
 import time
 from pynput import mouse
@@ -105,3 +105,4 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True)
+'''

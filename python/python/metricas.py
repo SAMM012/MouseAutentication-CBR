@@ -1,5 +1,6 @@
 import numpy as np
 from db_config import ejecutar_consulta
+import math
 
 
 class CalculoMetricas:
@@ -41,7 +42,7 @@ class CalculoMetricas:
         return np.mean(aceleraciones) if aceleraciones else 0
 
         #Función para calcular tiempo total
-    def calcular_tiempo_total(self, movimientos):
+    def calcular_tiempo_t(self, movimientos):
         if not movimientos:
             print("No hay movimientos disponibles para calcular el tiempo total.")
             return 0.0
@@ -51,3 +52,25 @@ class CalculoMetricas:
         tiempo_total = max(timestamps) - min(timestamps)  # Calcular tiempo total
 
         return tiempo_total
+
+
+        #CALCULAR LA DESVIACION ESTANDAR DE LA ACELERACIÓN
+    def desviacion_estandar_acelera(self):
+
+        if len(self.aceleraciones) > 1:
+            aceleracion_media = sum(self.aceleraciones) / len(self.aceleraciones)
+            varianza = sum((a - aceleracion_media) ** 2 for a in self.aceleraciones) / len(self.aceleraciones)
+            desviacion_estandar = math.sqrt(varianza)
+            return desviacion_estandar
+        else:
+            return 0
+    
+    #Calcular la desviación estandar de la velocidad
+    def desviacion_estandar_velocidad(self):
+         if len(self.velocidades) > 1:
+            velocidad_media = sum(self.velocidades) / len(self.velocidades)
+            varianza = sum((v - velocidad_media) ** 2 for v in self.velocidades) / len(self.velocidades)
+            desviacion_estandar = math.sqrt(varianza)
+            return desviacion_estandar
+         else:
+            return 0

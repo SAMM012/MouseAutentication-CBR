@@ -25,6 +25,20 @@ def inicializar_tablas():
                 timestamp  REAL
             )
         """)
+        #Crear la tabla para las metricas
+        cursor.execute("""
+          CREATE TABLE IF NOT EXISTS metricas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                intento_id INTEGER NOT NULL,
+                username TEXT NOT NULL,
+                velocidad_promedio REAL NOT NULL,
+                aceleracion_promedio REAL NOT NULL,
+                tiempo_total REAL NOT NULL,
+                desviacion_estandar_velocidad REAL NOT NULL,
+                desviacion_estandar_aceleracion REAL NOT NULL,
+                FOREIGN KEY (intento_id) REFERENCES movimientos(intento_id)
+)
+        """)
         conn.commit()
 
 def ejecutar_consulta(query, params=(), fetch=False, fetch_one=False):

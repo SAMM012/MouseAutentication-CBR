@@ -4,6 +4,8 @@ import threading
 import time
 from pynput import mouse
 from db_config import ejecutar_consulta
+from metricas import CalculoMetricas
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -39,9 +41,49 @@ def capture_mouse_movement(username, duration=10):  # Cambiamos a 10 segundos pa
     with mouse.Listener(on_move=on_move) as listener:
         time.sleep(duration)
         listener.stop()
+
         #guardar movimientos en la bd
     guardar_movimientos(username, movimientos_usuario, intento_id)
+
+    #Calcular las metricas depués de guardar
+    calcular_metricas(username, intento_id)
+
     print(f"Movimientos guardados en la base de datos para el usuario {username}")
+
+    #Calcular las metricas y guardar en la db
+def calcular_metricas(username, intento_id):
+        
+    #Validamos que la metrica a calcular no haya sido calculada previamente
+    validar_query= "SELECT COUNT(*) FROM metricas WHERE intento_id = ?" 
+    result = ejecutar_consulta(validar_query, (intento_id,), fetch_one=True)
+
+    if result[0] > 0:
+        print(f"Las métricas para el intento {intento_id} del usuario {username} ya existen.")
+        return
+
+    query = "SELECT x, y, timestamp FROM movimientos WHERE username = ? AND intento_id = ? ORDER BY timestamp"      # Extraer movimientos para el intento actual
+    movimientos = ejecutar_consulta(query, (username, intento_id), fetch=True)
+
+    if movimientos:
+
+        calculo = CalculoMetricas(movimientos) # Crear una instancia de la clase Metricas
+
+        # Calculamos las metricas
+        velocidad_prom = calculo.velocidad_prom()
+        aceleracion_prom = calculo.aceleracion_prom()
+        tiempo_total = calculo.tiempo_total()
+        desv_estandar_vel = calculo.desviacion_estandar_velocidad()
+        desv_estandar_acel = calculo.desviacion_estandar_acelera()
+
+        # Guardar las metricas en la db
+        query = """
+        INSERT INTO metricas (intento_id, username, velocidad_promedio, aceleracion_promedio, tiempo_total, desviacion_estandar_velocidad, desviacion_estandar_aceleracion)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """
+        ejecutar_consulta(query, (intento_id, username, velocidad_prom, aceleracion_prom, tiempo_total, desv_estandar_vel, desv_estandar_acel))
+        print(f"Métricas guardadas para el intento {intento_id} del usuario {username}.")
+    else:
+        print(f"No se encontraron movimientos para el intento {intento_id} del usuario {username}.")
 
 @app.route("/")
 def home():

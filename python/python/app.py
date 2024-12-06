@@ -34,10 +34,18 @@ def capture_mouse_movement(username, duration=10):  # Cambiamos a 10 segundos pa
     movimientos_usuario = []
     intento_id = generar_intento_id(username)
 
-    def on_move(x, y):
-        timestamp = time.time()
-        movimientos_usuario.append((x, y, timestamp))
+    #Importante verificar si el mouse se ha movido
+    ultimo_x, ultimo_y = None, None #Almacenar la ultima posición
 
+    def on_move(x, y):
+        nonlocal ultimo_x, ultimo_y
+        timestamp = time.time()
+    #Ignorar coordenadas que son iguales a las ultimas registradas
+        if ultimo_x is not None and ultimo_y is not None:
+            if x == ultimo_x and y == ultimo_y:
+             return
+        movimientos_usuario.append((x, y, timestamp))
+    #Capturar coordendas por el tiempo especificado
     with mouse.Listener(on_move=on_move) as listener:
         time.sleep(duration)
         listener.stop()

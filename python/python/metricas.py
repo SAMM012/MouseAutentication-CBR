@@ -84,23 +84,31 @@ class CalculoMetricas:
 
     # Función para calcular la velocidad promedio
     def velocidad_prom(self):
+
         self.velocidades = []
+
         for i in range(1, len(self.movimientos)):
             x1, y1, t1 = self.movimientos[i - 1]
             x2, y2, t2 = self.movimientos[i]
 
             distancia = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+            if distancia == 0:
+                continue  # Ignorar puntos idénticos
+            if distancia < 2:
+                continue
+
             tiempo = t2 - t1
 
             if tiempo > 0:
                 velocidad = distancia / tiempo
-                self.velocidades.append((velocidad, t2))
+                self.velocidades.append((velocidad,t2))
 
-        velocidades = [v for v, _ in self.velocidades]
-        return np.mean(velocidades) if velocidades else 0
+        #velocidades = [v for v, _ in self.velocidades]
+        return np.mean(self.velocidades) if self.velocidades else 0
 
     # Función para calcular la aceleración promedio
     def aceleracion_prom(self):
+
         self.aceleraciones = []
 
         for i in range(1, len(self.velocidades)):
